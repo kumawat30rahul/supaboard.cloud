@@ -50,7 +50,7 @@ const ReactionTimePage = () => {
 
   return (
     <div
-      className={`${backGroundColor()} h-svh cursor-pointer`}
+      className={`${backGroundColor()} h-svh cursor-pointer text-center`}
       onClick={handleClick}
     >
       {gameState === "ready" && (
