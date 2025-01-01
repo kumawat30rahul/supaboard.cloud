@@ -1,8 +1,12 @@
 import { useState, useRef, useCallback } from "react";
+import { useDataContext } from "../../../DataContext";
 
 const VideoRecorderPage = () => {
+  const { setRecordedVideosContext, recordedVideos } = useDataContext();
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedVideo, setRecordedVideo] = useState<any | null>([]);
+  const [recordedVideo, setRecordedVideo] = useState<string[]>(
+    recordedVideos || []
+  );
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -38,7 +42,8 @@ const VideoRecorderPage = () => {
           type: "video/webm",
         });
         const url = URL.createObjectURL(blob);
-        setRecordedVideo((prev: any) => [...(prev || []), url]);
+        setRecordedVideo((prev: string[]) => [...(prev || []), url]);
+        setRecordedVideosContext((prev: string[]) => [...(prev || []), url]);
         chunksRef.current = [];
 
         // Stop all tracks
