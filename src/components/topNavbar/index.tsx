@@ -8,7 +8,7 @@ const TopNavbar = () => {
   ];
   const location = useLocation();
   return (
-    <nav className="flex space-x-4 bg-[#24252a] p-4">
+    <nav className="flex space-x-4 bg-[#24252a] p-4 fixed top-0 left-0 right-0 z-10 rounded-lg m-2">
       {tabs?.map(({ path, label }) => (
         <Link
           key={path}
