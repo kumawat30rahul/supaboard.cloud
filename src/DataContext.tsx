@@ -6,7 +6,9 @@ interface DataContextProps {
   recordedVideos: string[];
   setBestReactionTime: (time: number) => void;
   setCurrentReactionTime: (time: number) => void;
-  setRecordedVideosContext: (videos: string[]) => void;
+  setRecordedVideosContext: (
+    videos: string[] | ((prev: string[]) => string[])
+  ) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);

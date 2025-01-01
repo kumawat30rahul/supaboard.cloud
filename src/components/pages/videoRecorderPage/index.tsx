@@ -43,7 +43,7 @@ const VideoRecorderPage = () => {
         });
         const url = URL.createObjectURL(blob);
         setRecordedVideo((prev: string[]) => [...(prev || []), url]);
-        setRecordedVideosContext((prev: string[]) => [...(prev || []), url]);
+        setRecordedVideosContext((prev) => [...(prev || []), url]);
         chunksRef.current = [];
 
         // Stop all tracks
