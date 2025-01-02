@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 const GithubProfilePage = () => {
-  const [profileData, setProfileData] = useState<any>(null);
-  const [loader, setLoader] = useState(true);
+  const [profileData, setProfileData] = useState<string>("");
+  const [loader, setLoader] = useState<boolean>(true);
 
   const fetchGithubProfile = async () => {
     setLoader(true);
@@ -15,22 +15,24 @@ const GithubProfilePage = () => {
           },
         }
       );
-      const data = await response.json();
+
+      if (!response.ok) {
+        alert("Error fetching Github profile");
+        setLoader(false);
+        return;
+      }
+
+      const data = await response?.json();
       if (Number(data?.status) > 400) {
         setLoader(false);
         return;
       }
       if (data?.content) {
-        // Decode base64 content
-        const decodedContent = atob(data.content).replace(
-          /👋|🌟|💡|🔍|🤝|📚|💬/g,
-          (emoji) => `<span>${emoji}</span>`
-        );
+        const decodedContent = atob(data?.content);
         setProfileData(decodedContent);
         setLoader(false);
       }
     } catch (error) {
-      console.error("Error fetching Github profile:", error);
       setLoader(false);
     }
   };
@@ -51,7 +53,10 @@ const GithubProfilePage = () => {
           <div className="loader"></div>
         </div>
       ) : (
-        <div dangerouslySetInnerHTML={{ __html: profileData }} />
+        <div
+          dangerouslySetInnerHTML={{ __html: profileData }}
+          className="flex items-center justify-center"
+        />
       )}
     </div>
   );

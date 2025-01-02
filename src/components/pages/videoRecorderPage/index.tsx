@@ -3,49 +3,40 @@ import { useDataContext } from "../../../DataContext";
 
 const VideoRecorderPage = () => {
   const { setRecordedVideosContext, recordedVideos } = useDataContext();
-  const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordedVideo, setRecordedVideo] = useState<string[]>(
     recordedVideos || []
   );
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null); // MediaRecorder instance
+  const videoRef = useRef<HTMLVideoElement>(null); // Video element reference
+  const chunksRef = useRef<Blob[]>([]); // Recorded video in chunks
 
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
+        // Geting user media devices
         video: true,
         audio: true,
       });
 
       if (videoRef?.current) {
-        videoRef.current.srcObject = stream;
+        videoRef.current.srcObject = stream; // Seting video stream to video element
       }
 
       const mediaRecorder = new MediaRecorder(stream, {
+        // Creating media recorder instance for recording video
         mimeType: "video/webm",
       });
 
       mediaRecorder.ondataavailable = (event) => {
+        // On data available, pushing the data to chunks
         if (event?.data?.size > 0) {
           chunksRef.current.push(event?.data);
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef?.current, {
-          type: "video/webm",
-        });
-        const url = URL.createObjectURL(blob);
-        setRecordedVideo((prev: string[]) => [...(prev || []), url]);
-        setRecordedVideosContext((prev) => [...(prev || []), url]);
-        chunksRef.current = [];
-
-        stream.getTracks().forEach((track) => track.stop());
-      };
-
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start();
+      mediaRecorder.start(); // Start recording
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing media devices:", err);
@@ -57,9 +48,25 @@ const VideoRecorderPage = () => {
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef?.current && isRecording) {
-      mediaRecorderRef.current.stop();
+      const mediaRecorder = mediaRecorderRef.current;
+
+      mediaRecorder.onstop = () => {
+        // Creating a blob from recorded chunks
+        const blob = new Blob(chunksRef?.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+
+        // Updating the recorded videos state and context
+        setRecordedVideo((prev: string[]) => [...(prev || []), url]);
+        setRecordedVideosContext((prev) => [...(prev || []), url]);
+
+        // Clearing the recorded chunks
+        chunksRef.current = [];
+      };
+
+      mediaRecorder.stop(); // Stop recording
       setIsRecording(false);
 
+      // Stop video stream
       if (videoRef?.current) {
         const stream = videoRef.current.srcObject as MediaStream;
         if (stream) {
@@ -129,7 +136,7 @@ const VideoRecorderPage = () => {
               </div>
               <button
                 onClick={stopRecording}
-                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 
+                className="absolute bottom-20 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 
                 transition-colors"
               >
                 Stop Recording
@@ -137,9 +144,9 @@ const VideoRecorderPage = () => {
             </>
           )}
         </div>
-        {/* Control buttons - Only show when not recording */}
+        {/* Control buttons - Start Recording*/}
         {!isRecording && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 flex flex-col items-center justify-center space-x-4">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center space-y-4">
             <img
               src="https://icons.veryicon.com/png/o/miscellaneous/food-time/play-video-1.png"
               alt="playbutton-image"
@@ -149,16 +156,16 @@ const VideoRecorderPage = () => {
             <button
               onClick={startRecording}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
-                transition-colors disabled:opacity-50"
+              transition-colors disabled:opacity-50"
             >
               Start Recording
             </button>
           </div>
         )}
       </div>
-      {/* Only show recorded videos when not recording */}
+      {/* Control Buttons - Stop Recording */}
       {!isRecording && (
-        <div className="rounded-md bg-gray-700 p-4 w-full md:w-1/3 lg:w-1/4">
+        <div className="rounded-md bg-gray-800 p-4 w-full md:w-1/3 lg:w-1/4">
           <span className="font-bold text-lg">Recorded Videos</span>
           {recordedVideo && (
             <div className="space-y-4">

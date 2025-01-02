@@ -4,6 +4,8 @@ import { useEffect } from "react";
 
 const TopNavbar = () => {
   const { currentTab, setCurrentTab } = useDataContext();
+  const location = useLocation();
+
   const tabs = [
     {
       path: "/",
@@ -19,13 +21,11 @@ const TopNavbar = () => {
     },
   ];
 
-  const location = useLocation();
-
   useEffect(() => {
-    if (location.pathname) {
+    if (location?.pathname) {
       setCurrentTab(location.pathname);
     }
-  }, [location.pathname]);
+  }, [location?.pathname]);
 
   return (
     <div className="z-100">
@@ -45,7 +45,7 @@ const TopNavbar = () => {
             </Link>
           ))}
         </div>
-
+        {/* Current Tab Image Context */}
         <div className="hidden md:flex items-center space-x-4">
           {location.pathname === "/profile" ? (
             <img
@@ -65,6 +65,7 @@ const TopNavbar = () => {
           )}
         </div>
       </nav>
+      {/* Current Tab Context */}
       <div className="flex justify-center items-center fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 p-4 rounded-full m-4 cursor-pointer hover:bg-blue-500 z-40">
         <span className="text-white text-sm font-bold min-w-max">
           {location.pathname === "/profile"
