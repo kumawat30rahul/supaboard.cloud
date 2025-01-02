@@ -4,7 +4,7 @@ const GithubProfilePage = () => {
   const [profileData, setProfileData] = useState<string>("");
   const [loader, setLoader] = useState<boolean>(true);
 
-  const fetchGithubProfile = async () => {
+  const fetchGithubProfile = async (signal: any) => {
     setLoader(true);
     try {
       const response = await fetch(
@@ -13,6 +13,7 @@ const GithubProfilePage = () => {
           headers: {
             Authorization: `token ${import.meta.env.VITE_GITHUB_REPO_TOKEN}`,
           },
+          signal,
         }
       );
 
@@ -38,7 +39,13 @@ const GithubProfilePage = () => {
   };
 
   useEffect(() => {
-    fetchGithubProfile();
+    const controller = new AbortController(); // Create a new AbortController for aborting fetch request
+    const { signal } = controller;
+    fetchGithubProfile(signal);
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   return (
