@@ -8,7 +8,9 @@ const GithubProfilePage = () => {
     setLoader(true);
     try {
       const response = await fetch(
-        `https://api.github.com/repos/${"kumawat30rahul"}/${"kumawat30rahul"}/contents/README.md`,
+        `https://api.github.com/repos/${import.meta.env.VITE_GITHUB_USERNAME}/${
+          import.meta.env.VITE_GITHUB_USERNAME
+        }/contents/README.md`,
         {
           headers: {
             Authorization: `token ${import.meta.env.VITE_GITHUB_REPO_TOKEN}`,
