@@ -13,32 +13,27 @@ const VideoRecorderPage = () => {
 
   const startRecording = useCallback(async () => {
     try {
-      // Request access to user's camera and microphone
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
 
-      // Display live video feed
-      if (videoRef.current) {
+      if (videoRef?.current) {
         videoRef.current.srcObject = stream;
       }
 
-      // Create MediaRecorder instance
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: "video/webm",
       });
 
-      // Handle data as it becomes available
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
+        if (event?.data?.size > 0) {
+          chunksRef.current.push(event?.data);
         }
       };
 
-      // Handle recording stop
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, {
+        const blob = new Blob(chunksRef?.current, {
           type: "video/webm",
         });
         const url = URL.createObjectURL(blob);
@@ -46,7 +41,6 @@ const VideoRecorderPage = () => {
         setRecordedVideosContext((prev) => [...(prev || []), url]);
         chunksRef.current = [];
 
-        // Stop all tracks
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -55,16 +49,18 @@ const VideoRecorderPage = () => {
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing media devices:", err);
+      alert(
+        "Error accessing media devices. Please allow access and try again."
+      );
     }
   }, []);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef?.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
 
-      // Clear the live video feed
-      if (videoRef.current) {
+      if (videoRef?.current) {
         const stream = videoRef.current.srcObject as MediaStream;
         if (stream) {
           stream.getTracks().forEach((track) => track.stop());
@@ -77,8 +73,6 @@ const VideoRecorderPage = () => {
   const downloadVideo = useCallback(
     (index: number) => {
       if (!recordedVideo) return;
-
-      // Create download link
       const a = document.createElement("a");
       a.href = recordedVideo[index];
       a.download = `recorded-video-${Date.now()}.webm`;
@@ -87,28 +81,71 @@ const VideoRecorderPage = () => {
     [recordedVideo]
   );
 
+  const deleteVideo = useCallback(
+    (index: number) => {
+      if (!recordedVideo) return;
+      const updatedVideos = recordedVideo?.filter((_, i) => i !== index);
+      setRecordedVideo(updatedVideos);
+      setRecordedVideosContext(updatedVideos);
+    },
+    [recordedVideo]
+  );
+
   return (
-    <div className="flex flex-col md:flex-row w-full flex-1 h-auto p-4 gap-6 mt-[100px]">
-      <div className="space-y-4 w-full md:w-2/3 lg:w-full relative">
+    <div
+      className={`relative ${
+        isRecording
+          ? "h-screen w-screen"
+          : "flex flex-col md:flex-row w-full flex-1 h-auto p-4 gap-6 mt-[150px]"
+      }`}
+    >
+      <div
+        className={`${
+          isRecording
+            ? "fixed inset-0 z-50"
+            : "space-y-4 w-full md:w-2/3 lg:w-full relative"
+        }`}
+      >
         {/* Live video preview */}
-        <div className="relative bg-black rounded-lg overflow-hidden">
+        <div
+          className={`relative bg-black ${
+            isRecording ? "w-screen h-screen" : "rounded-lg overflow-hidden"
+          }`}
+        >
           <video
             ref={videoRef}
             autoPlay
             muted
             playsInline
-            className="w-full aspect-video"
+            className={`${
+              isRecording ? "w-full h-full object-cover" : "w-full aspect-video"
+            }`}
           />
           {isRecording && (
-            <div className="absolute top-4 right-4 flex items-center">
-              <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2" />
-              <span className="text-white text-sm">Recording...</span>
-            </div>
+            <>
+              <div className="absolute top-4 right-4 flex items-center">
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2" />
+                <span className="text-white text-sm">Recording...</span>
+              </div>
+              <button
+                onClick={stopRecording}
+                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 
+                transition-colors"
+              >
+                Stop Recording
+              </button>
+            </>
           )}
         </div>
-        {/* Control buttons */}
-        <div className="absolute top-0 left-4 flex justify-center space-x-4">
-          {!isRecording ? (
+        {/* Control buttons - Only show when not recording */}
+        {!isRecording && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 flex flex-col items-center justify-center space-x-4">
+            <img
+              src="https://icons.veryicon.com/png/o/miscellaneous/food-time/play-video-1.png"
+              alt="playbutton-image"
+              className="h-20 w-20 cursor-pointer"
+              onClick={startRecording}
+            />
             <button
               onClick={startRecording}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
@@ -116,44 +153,44 @@ const VideoRecorderPage = () => {
             >
               Start Recording
             </button>
-          ) : (
-            <button
-              onClick={stopRecording}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
-                transition-colors"
-            >
-              Stop Recording
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="rounded-md bg-gray-700 p-4 w-full md:w-1/3 lg:w-1/4">
-        <span>Recorded Videos</span>
-        {recordedVideo && (
-          <div className="space-y-4">
-            {recordedVideo?.length > 0 ? (
-              recordedVideo?.map((url: string, index: number) => (
-                <div className="relative">
-                  <video
-                    key={url}
-                    src={url}
-                    controls
-                    className="w-full aspect-video bg-black rounded-lg"
-                  />
-                  <div className="absolute top-2 right-2 bg-white rounded-full p-2 h-10 w-10 md:h-6 md:w-6 cursor-pointer border border-yellow-300">
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/512/0/532.png"
-                      onClick={() => downloadVideo(index)}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-white">No recorded videos yet.</div>
-            )}
           </div>
         )}
       </div>
+      {/* Only show recorded videos when not recording */}
+      {!isRecording && (
+        <div className="rounded-md bg-gray-700 p-4 w-full md:w-1/3 lg:w-1/4">
+          <span className="font-bold text-lg">Recorded Videos</span>
+          {recordedVideo && (
+            <div className="space-y-4">
+              {recordedVideo?.length > 0 ? (
+                recordedVideo?.map((url: string, index: number) => (
+                  <div key={url} className="relative">
+                    <video
+                      src={url}
+                      controls
+                      className="w-full aspect-video bg-black rounded-lg"
+                    />
+                    <div className="flex items-center justify-end gap-2 absolute top-2 right-2 rounded-full h-10 w-10 md:h-6 md:w-6 cursor-pointer">
+                      <img
+                        src="https://www.svgrepo.com/show/218151/cancel-close.svg"
+                        onClick={() => deleteVideo(index)}
+                        className="bg-red-500 p-2 md:p-1 rounded-full fill-white"
+                      />
+                      <img
+                        src="https://cdn-icons-png.flaticon.com/512/0/532.png"
+                        onClick={() => downloadVideo(index)}
+                        className="bg-green-500 p-2 md:p-1 rounded-full"
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-white">No recorded videos yet.</div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

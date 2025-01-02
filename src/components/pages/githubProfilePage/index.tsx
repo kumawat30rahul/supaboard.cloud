@@ -40,7 +40,7 @@ const GithubProfilePage = () => {
   }, []);
 
   return (
-    <div className="mt-[100px]">
+    <div className="mt-[180px]">
       {!profileData && !loader && (
         <div className="flex items-center justify-center w-full">
           <h2 className="text-2xl font-bold">No data found</h2>

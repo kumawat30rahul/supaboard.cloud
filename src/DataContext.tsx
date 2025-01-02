@@ -9,6 +9,8 @@ interface DataContextProps {
   setRecordedVideosContext: (
     videos: string[] | ((prev: string[]) => string[])
   ) => void;
+  currentTab: string;
+  setCurrentTab: (tab: string) => void;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -29,6 +31,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   const [bestReactionTime, setBestReactionTime] = useState(0);
   const [currentReactionTime, setCurrentReactionTime] = useState(0);
   const [recordedVideos, setRecordedVideosContext] = useState<string[]>([]);
+  const [currentTab, setCurrentTab] = useState("/");
 
   return (
     <DataContext.Provider
@@ -39,6 +42,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         setBestReactionTime,
         setCurrentReactionTime,
         setRecordedVideosContext,
+        setCurrentTab,
+        currentTab,
       }}
     >
       {children}

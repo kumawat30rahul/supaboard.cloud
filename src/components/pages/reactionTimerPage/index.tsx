@@ -150,7 +150,7 @@ const ReactionTimePage = () => {
       )}
       {gameState === "falseClick" && (
         <div className="flex items-center justify-center h-full font-bold text-white text-2xl">
-          Too soon!
+          Too soon! Click again to try again
         </div>
       )}
     </div>
